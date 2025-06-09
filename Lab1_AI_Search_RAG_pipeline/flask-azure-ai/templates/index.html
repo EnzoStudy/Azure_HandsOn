@@ -1,37 +1,367 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-    <title>Azure AI 챗봇</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="p-4">
-    <div class="container">
-        <h1 class="mb-4">Azure AI 챗봇</h1>
-        
-        <form method="POST">
-            <div class="mb-3">
-                <textarea class="form-control" name="question" rows="3" 
-                          placeholder="질문을 입력하세요">{{ question }}</textarea>
-            </div>
-            <div class="mb-3 form-check">
-                <input type="checkbox" class="form-check-input" 
-                       name="show_citations" id="show_citations">
-                <label class="form-check-label" for="show_citations">출처 표시</label>
-            </div>
-            <button type="submit" class="btn btn-primary">전송</button>
-        </form>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azure AI Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        {% if answer %}
-        <div class="mt-4">
-            <h3>답변:</h3>
-            <div class="alert alert-success">{{ answer }}</div>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 700px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        .chat-body {
+            padding: 40px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            position: absolute;
+            top: -10px;
+            left: 16px;
+            background: white;
+            padding: 0 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #667eea;
+            z-index: 1;
+        }
+
+        .question-input {
+            width: 100%;
+            padding: 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            resize: vertical;
+            min-height: 120px;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+        }
+
+        .question-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: white;
+        }
+
+        .options {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            display: none;
+        }
+
+        .checkmark {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #667eea;
+            border-radius: 4px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-wrapper input[type="checkbox"]:checked + .checkmark {
+            background: #667eea;
+            border-color: #667eea;
+        }
+
+        .checkbox-wrapper input[type="checkbox"]:checked + .checkmark::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .answer-section {
+            margin-top: 30px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .answer-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 16px;
+            padding: 25px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 20px;
+        }
+
+        .answer-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+
+        .answer-header i {
+            margin-right: 10px;
+            color: #667eea;
+        }
+
+        .answer-content {
+            color: #212529;
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .citations-card {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .citations-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            color: #856404;
+            font-weight: 600;
+        }
+
+        .citations-content {
+            background: #fffbf0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            color: #856404;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .chat-body {
+                padding: 25px;
+            }
             
-            {% if citations %}
-            <h4>출처:</h4>
-            <pre class="bg-light p-3">{{ citations }}</pre>
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .question-input {
+                min-height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="header">
+            <h1><i class="fas fa-robot"></i> Azure AI Assistant</h1>
+            <p>지능형 AI와 대화하고 정확한 답변을 받아보세요</p>
+        </div>
+        
+        <div class="chat-body">
+            <form method="POST" id="chatForm">
+                <div class="input-group">
+                    <label for="question">질문 입력</label>
+                    <textarea 
+                        id="question" 
+                        name="question" 
+                        class="question-input" 
+                        placeholder="궁금한 것을 자유롭게 물어보세요..."
+                        required>{{ question }}</textarea>
+                </div>
+                
+                <div class="options">
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" name="show_citations" id="show_citations" 
+                               {% if request.form.get('show_citations') %}checked{% endif %}>
+                        <span class="checkmark"></span>
+                        <span>답변 출처 표시</span>
+                    </label>
+                </div>
+                
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-paper-plane"></i>
+                    AI에게 질문하기
+                </button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>AI가 답변을 생성하고 있습니다...</p>
+            </div>
+
+            {% if answer %}
+            <div class="answer-section">
+                <div class="answer-card">
+                    <div class="answer-header">
+                        <i class="fas fa-comment-dots"></i>
+                        <h3>AI 답변</h3>
+                    </div>
+                    <div class="answer-content">{{ answer|safe }}</div>
+                </div>
+                
+                {% if citations %}
+                <div class="citations-card">
+                    <div class="citations-header">
+                        <i class="fas fa-book-open"></i>
+                        참고 자료
+                    </div>
+                    <div class="citations-content">{{ citations }}</div>
+                </div>
+                {% endif %}
+            </div>
             {% endif %}
         </div>
-        {% endif %}
     </div>
+
+    <script>
+        document.getElementById('chatForm').addEventListener('submit', function() {
+            document.getElementById('loading').style.display = 'block';
+        });
+
+        // Auto-resize textarea
+        const textarea = document.getElementById('question');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    </script>
 </body>
 </html>
