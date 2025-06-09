@@ -1,3 +1,6 @@
+개인 블로그 게시물 : https://enzo.super.site/%EB%B8%94%EB%A1%9C%EA%B7%B8-%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%B2%A0%EC%9D%B4%EC%8A%A4/azure-ai-rag-%EC%96%B4%ED%94%8C%EB%A6%AC%EC%BC%80%EC%9D%B4%EC%85%98-%EA%B0%9C%EB%B0%9C-%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8
+
+
 # Azure AI RAG 솔루션 구축 워크샵
 
 이 워크샵은 Microsoft Azure의 최신 생성형 AI 기술을 활용하여 실제 비즈니스 데이터를 기반으로 한 검색 증강 생성(Retrieval Augmented Generation, RAG) 솔루션을 직접 구축하고 실습하는 과정입니다
@@ -6,7 +9,8 @@ Azure OpenAI, Azure AI Search, Azure Storage 등 주요 클라우드 서비스�
 ## 솔루션 아키텍처
 
 전체 솔루션은 다음과 같은 구조로 구성됩니다
-![Blank diagram - Page 1](https://github.com/user-attachments/assets/e54c3dd0-4e47-4c5e-9731-cbee47dc1cf2)
+
+![Architecture Block diagram](https://github.com/user-attachments/assets/0aab1997-e825-46a6-ba5a-3e6ec9116322)
 
 
 ### 데이터 처리 파이프라인
@@ -166,3 +170,4 @@ python app.py
 Azure의 관리형 AI 서비스들을 조합하여 복잡한 AI 인프라를 비교적 간단하게 구축할 수 있으며, 실제 업무 환경에서 활용 가능한 수준의 솔루션을 개발할 수 있습니다. 
 향후 이 기본 구조를 바탕으로 더 복잡한 비즈니스 로직과 고도화된 UI/UX를 추가하여 엔터프라이즈급 AI 애플리케이션으로 발전시킬 수 있습니다.
 
+<img width="434" alt="final UI" src="https://github.com/user-attachments/assets/7e51d917-b00a-4c22-8af8-cf5af2144991" />
