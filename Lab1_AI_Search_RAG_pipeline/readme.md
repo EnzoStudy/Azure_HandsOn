@@ -6,6 +6,8 @@ Azure OpenAI, Azure AI Search, Azure Storage 등 주요 클라우드 서비스�
 ## 솔루션 아키텍처
 
 전체 솔루션은 다음과 같은 구조로 구성됩니다
+![Blank diagram - Page 1](https://github.com/user-attachments/assets/e54c3dd0-4e47-4c5e-9731-cbee47dc1cf2)
+
 
 ### 데이터 처리 파이프라인
 
